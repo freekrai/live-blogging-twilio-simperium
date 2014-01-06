@@ -1,8 +1,5 @@
 <?php
 
-#error_reporting(E_ALL | E_STRICT);
-#ini_set('display_errors', 1);
-
 include("jolt.php");
 require 'Services/simperium.php';
 require 'Services/Twilio.php';
@@ -26,14 +23,15 @@ $app->post('/listener', function(){
 
 	$bucket = (String)$app->option('simperium.bucket');
 
-//	generate a unique UUID to use as the post id:
-	$sms_id = $app->store('simperium')->generate_uuid();
-
 	if ( isset($_POST['NumMedia']) && $_POST['NumMedia'] > 0 ){
 		for ($i = 0; $i < $_POST['NumMedia']; $i++){
 			if (strripos($_POST['MediaContentType'.$i], 'image') === False){
 				continue;
 			}
+
+//			generate a unique UUID to use as the post id:
+			$sms_id = $app->store('simperium')->generate_uuid();
+
 			$file = sha1($_POST['MediaUrl'.$i]).'.jpg';
 			file_put_contents( 'images/original/'.$file, file_get_contents($_POST['MediaUrl'.$i]) );
 			chmod ('images/original/'.$file, 01777);
@@ -63,6 +61,9 @@ $app->post('/listener', function(){
 		);
 		return true;
 	}else{
+//		generate a unique UUID to use as the post id:
+		$sms_id = $app->store('simperium')->generate_uuid();
+
 		//	no image... text post
 		$app->store('simperium')->$bucket->post( $sms_id,array(
 			'text'=>$_POST['Body'],
